@@ -19,7 +19,7 @@ class ZeroTrustMiddlewareServiceProvider extends PackageServiceProvider
             ->hasConfigFile();
     }
 
-    public function bootingPackage()
+    public function bootingPackage(): void
     {
         app('router')->aliasMiddleware('cloudflare-zero-trust', ZeroTrustMiddleware::class);
     }

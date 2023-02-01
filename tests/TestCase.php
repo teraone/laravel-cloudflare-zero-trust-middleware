@@ -59,14 +59,14 @@ class TestCase extends Orchestra
         ];
     }
 
-    public function getEnvironmentSetUp($app)
+    public function getEnvironmentSetUp($app): void
     {
         config()->set('database.default', 'testing');
         config()->set('cloudflare-zero-trust-middleware.cloudflare_team_name', 'test');
         config()->set('cloudflare-zero-trust-middleware.cloudflare_zero_trust_application_audience_tag', 'aud');
     }
 
-    protected function fakeHttp()
+    protected function fakeHttp(): void
     {
         $key_set = new JWKSet([$this->jwk_1->toPublic(), $this->jwk_2->toPublic()]);
 
@@ -92,7 +92,7 @@ class TestCase extends Orchestra
 
         // The algorithm manager with the HS256 algorithm.
         $algorithmManager = new AlgorithmManager([
-            new RS256(),
+            new RS256,
         ]);
 
         // We instantiate our JWS Builder.
@@ -103,7 +103,7 @@ class TestCase extends Orchestra
             ->addSignature($key, ['alg' => 'RS256', 'kid' => $key->get('kid')])
             ->build();
 
-        $serializer = new CompactSerializer(); // The serializer
+        $serializer = new CompactSerializer; // The serializer
 
         return $serializer->serialize($jws, 0);
     }

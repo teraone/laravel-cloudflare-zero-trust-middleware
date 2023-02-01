@@ -88,7 +88,7 @@ class ZeroTrustMiddleware
     {
         // The serializer manager. We only use the JWS Compact Serialization Mode.
         $serializerManager = new JWSSerializerManager([
-            new CompactSerializer(),
+            new CompactSerializer,
         ]);
 
         // We try to load the token.
@@ -102,7 +102,7 @@ class ZeroTrustMiddleware
             ],
             [
                 // Adds JWS token type support
-                new JWSTokenSupport(),
+                new JWSTokenSupport,
             ]
         );
 
@@ -110,10 +110,10 @@ class ZeroTrustMiddleware
 
         $claimCheckerManager = new ClaimCheckerManager(
             [
-                new IssuedAtChecker(),
+                new IssuedAtChecker,
                 new IssuerChecker(['https://'.config('cloudflare-zero-trust-middleware.cloudflare_team_name').'.cloudflareaccess.com']),
-                new NotBeforeChecker(),
-                new ExpirationTimeChecker(),
+                new NotBeforeChecker,
+                new ExpirationTimeChecker,
                 new AudienceChecker(config('cloudflare-zero-trust-middleware.cloudflare_zero_trust_application_audience_tag')),
             ]
         );
@@ -123,7 +123,7 @@ class ZeroTrustMiddleware
         // We must verify the signature with the correct key
         $key_id_used_for_sig = $jws->getSignature(0)->getProtectedHeaderParameter('kid');
 
-        $key = $this->getJWKKeySet()->selectKey('sig', new RS256(), ['kid' => $key_id_used_for_sig]);
+        $key = $this->getJWKKeySet()->selectKey('sig', new RS256, ['kid' => $key_id_used_for_sig]);
 
         // key not found
         if ($key === null) {
@@ -136,7 +136,7 @@ class ZeroTrustMiddleware
 
         // The algorithm manager with the HS256 algorithm.
         $algorithmManager = new AlgorithmManager([
-            new RS256(),
+            new RS256,
         ], );
 
         // We instantiate our JWS Verifier.
