@@ -50,6 +50,10 @@ class ZeroTrustMiddleware
      */
     public function handle(Request $request, Closure $next)
     {
+        if (in_array(app()->environment(), config('cloudflare-zero-trust-middleware.disabled_environments', []))) {
+            return $next($request);
+        }
+
         $jwt = $request->header(self::CF_ACCESS_JWT_HEADER_NAME);
 
         if (! $jwt) {
