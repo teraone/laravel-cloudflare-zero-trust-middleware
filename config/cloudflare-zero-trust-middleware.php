@@ -55,7 +55,7 @@ return [
      | Most likely you do not have cloudflare available during development.
      | Use this setting to bypass the middleware for specific environments.
      |
-    */
+     */
     'disabled_environments' => [
         'local',
     ],

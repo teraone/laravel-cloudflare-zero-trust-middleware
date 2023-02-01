@@ -56,25 +56,38 @@ return [
     'cloudflare_zero_trust_application_audience_tag' => env('CLOUDFLARE_ZERO_TRUST_APPLICATION_AUDIENCE_TAG'),
 
     /*
-    |--------------------------------------------------------------------------
-    | Use certificate cache
-    |--------------------------------------------------------------------------
-    |
-    | Should it cache the cloudflare certificates.
-    |
-    */
+     |--------------------------------------------------------------------------
+     | Use certificate cache
+     |--------------------------------------------------------------------------
+     |
+     | Should it cache the cloudflare certificates.
+     |
+     */
     'cache' => true,
 
     /*
-   |--------------------------------------------------------------------------
-   | Certificate cache TTL
-   |--------------------------------------------------------------------------
-   |
-   | How long should we cache your public cloudflare certificates? In seconds.
-   | The certificate cache will be flushed when a new certificate is detected.
-   |
-   */
+     |--------------------------------------------------------------------------
+     | Certificate cache TTL
+     |--------------------------------------------------------------------------
+     |
+     | How long should we cache your public cloudflare certificates? In seconds.
+     | The certificate cache will be flushed when a new certificate is detected.
+     |
+     */
     'cache_ttl' => 60 * 60 * 24,
+
+    /*
+     |--------------------------------------------------------------------------
+     | Disable the middleware on these environments
+     |--------------------------------------------------------------------------
+     |
+     | Most likely you do not have cloudflare available during development.
+     | Use this setting to bypass the middleware for specific environments.
+     |
+     */
+    'disabled_environments' => [
+        'local',
+    ],
 ];
 ```
 
