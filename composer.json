@@ -20,7 +20,7 @@
     ],
     "require": {
         "php": "^8.1",
-        "illuminate/contracts": "^9.0",
+        "illuminate/contracts": "^9.0|^10.0",
         "guzzlehttp/guzzle": "^7.5",
         "spatie/laravel-package-tools": "^1.14.0",
         "web-token/jwt-checker": "^2.2",
