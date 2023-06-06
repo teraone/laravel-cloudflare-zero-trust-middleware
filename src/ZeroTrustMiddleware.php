@@ -125,11 +125,8 @@ class ZeroTrustMiddleware
 
         $headerCheckerManager->check($jws, 0, ['kid', 'alg']);
 
-        $claimCheckerManager = new ClaimCheckerManager(
-            [
-                ...$this->getClaimCheckers(),
-            ]
-        );
+        $claimCheckerManager = new ClaimCheckerManager($this->getClaimCheckers());
+
         $claims = json_decode($jws->getPayload(), true);
         $claimCheckerManager->check($claims, $this->getClaims());
 
