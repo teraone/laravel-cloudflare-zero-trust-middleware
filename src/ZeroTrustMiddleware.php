@@ -39,6 +39,8 @@ class ZeroTrustMiddleware
 
     public const CERTIFICATE_CACHE_KEY = 'cloudflare-zero-trust-middleware-certificate-cache';
 
+    final public const CLAIMS = ['iss', 'sub', 'aud', 'exp', 'nbf', 'country', 'identity_nonce', 'type'];
+
     /**
      * Handle an incoming request.
      *
@@ -79,12 +81,29 @@ class ZeroTrustMiddleware
         return $next($request);
     }
 
+
+    protected function getClaims(): array
+    {
+        return self::CLAIMS;
+    }
+
+    protected function getClaimCheckers(): array
+    {
+        return [
+            new IssuedAtChecker,
+            new IssuerChecker(['https://'.config('cloudflare-zero-trust-middleware.cloudflare_team_name').'.cloudflareaccess.com']),
+            new NotBeforeChecker,
+            new ExpirationTimeChecker,
+            new AudienceChecker(config('cloudflare-zero-trust-middleware.cloudflare_zero_trust_application_audience_tag')),
+        ];
+    }
+
     /**
      * @throws MissingMandatoryClaimException
      * @throws InvalidClaimException
      * @throws InvalidArgumentException
      */
-    private function jwtIsValid(string $token): bool
+    protected function jwtIsValid(string $token): bool
     {
         // The serializer manager. We only use the JWS Compact Serialization Mode.
         $serializerManager = new JWSSerializerManager([
@@ -110,15 +129,11 @@ class ZeroTrustMiddleware
 
         $claimCheckerManager = new ClaimCheckerManager(
             [
-                new IssuedAtChecker,
-                new IssuerChecker(['https://'.config('cloudflare-zero-trust-middleware.cloudflare_team_name').'.cloudflareaccess.com']),
-                new NotBeforeChecker,
-                new ExpirationTimeChecker,
-                new AudienceChecker(config('cloudflare-zero-trust-middleware.cloudflare_zero_trust_application_audience_tag')),
+                ...$this->getClaimCheckers(),
             ]
         );
         $claims = json_decode($jws->getPayload(), true);
-        $claimCheckerManager->check($claims, ['iss', 'sub', 'aud', 'exp', 'nbf', 'country', 'identity_nonce', 'type']);
+        $claimCheckerManager->check($claims, $this->getClaims());
 
         // We must verify the signature with the correct key
         $key_id_used_for_sig = $jws->getSignature(0)->getProtectedHeaderParameter('kid');
@@ -150,7 +165,7 @@ class ZeroTrustMiddleware
     /**
      * @throws InvalidConfigurationException
      */
-    private function validateConfig(): void
+    protected function validateConfig(): void
     {
         if (config('cloudflare-zero-trust-middleware.cloudflare_team_name') === null) {
             throw new InvalidConfigurationException('Missing config: cloudflare-zero-trust-middleware.cloudflare_team_name ');
@@ -163,7 +178,7 @@ class ZeroTrustMiddleware
     /**
      * @throws InvalidArgumentException
      */
-    private function getJWKKeySet(): JWKSet
+    protected function getJWKKeySet(): JWKSet
     {
         if (! config('cloudflare-zero-trust-middleware.cache')) {
             return $this->getKeysFromCloudflare();
@@ -176,7 +191,7 @@ class ZeroTrustMiddleware
         });
     }
 
-    private static function getCacheKey(): string
+    protected static function getCacheKey(): string
     {
         // ensure a config change "updates" the cache
 
@@ -186,7 +201,7 @@ class ZeroTrustMiddleware
     /**
      * @throws InvalidArgumentException
      */
-    private function getKeysFromCloudflare(): JWKSet
+    protected function getKeysFromCloudflare(): JWKSet
     {
         $url = 'https://'.config('cloudflare-zero-trust-middleware.cloudflare_team_name').'.cloudflareaccess.com/cdn-cgi/access/certs';
         $res = Http::timeout(5)
