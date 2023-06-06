@@ -44,7 +44,6 @@ class ZeroTrustMiddleware
     /**
      * Handle an incoming request.
      *
-     * @param  Request  $request
      * @param \Closure(Request): (Response|RedirectResponse) $next
      * @return Response|RedirectResponse
      *
@@ -80,7 +79,6 @@ class ZeroTrustMiddleware
 
         return $next($request);
     }
-
 
     protected function getClaims(): array
     {
