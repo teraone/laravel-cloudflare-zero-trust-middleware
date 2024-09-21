@@ -127,7 +127,7 @@ Please review [our security policy](../../security/policy) on how to report secu
 
 ## Credits
 
-- [Stefan Gotre](https://github.com/teraone)
+- [Stefan R.](https://github.com/teraone)
 - [Tyler Trushin](https://github.com/ttrushin)
 - [All Contributors](../../contributors)
 
