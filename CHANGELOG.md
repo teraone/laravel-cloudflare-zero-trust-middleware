@@ -2,6 +2,13 @@
 
 All notable changes to `laravel-cloudflare-zero-trust-middleware` will be documented in this file.
 
+## v1.2 Laravel 11 Support 💛 - 2024-09-21
+
+### Changes
+
+- updated dependencies
+- Laravel 11 support
+
 ## v1.1 Laravel 10 Support 💙 - 2023-06-06
 
 - Laravel 10 Support
