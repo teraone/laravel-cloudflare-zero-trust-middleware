@@ -44,12 +44,11 @@ class ZeroTrustMiddleware
     /**
      * Handle an incoming request.
      *
-     * @param \Closure(Request): (Response|RedirectResponse) $next
-     * @return Response|RedirectResponse
+     * @param  \Closure(Request): (Response|RedirectResponse)  $next
      *
      * @throws InvalidConfigurationException
      */
-    public function handle(Request $request, Closure $next)
+    public function handle(Request $request, Closure $next): Response|RedirectResponse
     {
         if (in_array(app()->environment(), config('cloudflare-zero-trust-middleware.disabled_environments', []))) {
             return $next($request);
