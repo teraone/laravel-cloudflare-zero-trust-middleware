@@ -3,9 +3,7 @@
 namespace Teraone\ZeroTrustMiddleware;
 
 use Closure;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use InvalidArgumentException;
@@ -26,6 +24,7 @@ use Jose\Component\Signature\JWSTokenSupport;
 use Jose\Component\Signature\JWSVerifier;
 use Jose\Component\Signature\Serializer\CompactSerializer;
 use Jose\Component\Signature\Serializer\JWSSerializerManager;
+use Symfony\Component\HttpFoundation\Response;
 use Teraone\ZeroTrustMiddleware\Exceptions\InvalidConfigurationException;
 
 class ZeroTrustMiddleware
@@ -44,11 +43,11 @@ class ZeroTrustMiddleware
     /**
      * Handle an incoming request.
      *
-     * @param  \Closure(Request): (Response|RedirectResponse)  $next
+     * @param  \Closure(Request): (Response)  $next
      *
      * @throws InvalidConfigurationException
      */
-    public function handle(Request $request, Closure $next): Response|RedirectResponse
+    public function handle(Request $request, Closure $next): Response
     {
         if (in_array(app()->environment(), config('cloudflare-zero-trust-middleware.disabled_environments', []))) {
             return $next($request);
