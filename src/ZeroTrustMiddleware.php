@@ -3,6 +3,7 @@
 namespace Teraone\ZeroTrustMiddleware;
 
 use Closure;
+use DateTimeZone;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
@@ -24,6 +25,7 @@ use Jose\Component\Signature\JWSTokenSupport;
 use Jose\Component\Signature\JWSVerifier;
 use Jose\Component\Signature\Serializer\CompactSerializer;
 use Jose\Component\Signature\Serializer\JWSSerializerManager;
+use Symfony\Component\Clock\NativeClock;
 use Symfony\Component\HttpFoundation\Response;
 use Teraone\ZeroTrustMiddleware\Exceptions\InvalidConfigurationException;
 
@@ -83,13 +85,18 @@ class ZeroTrustMiddleware
         return self::CLAIMS;
     }
 
+    /**
+     * @throws \DateInvalidTimeZoneException
+     */
     protected function getClaimCheckers(): array
     {
+        $clock = new NativeClock(new DateTimeZone('UTC'));
+
         return [
-            new IssuedAtChecker,
+            new IssuedAtChecker(clock: $clock),
             new IssuerChecker(['https://'.config('cloudflare-zero-trust-middleware.cloudflare_team_name').'.cloudflareaccess.com']),
-            new NotBeforeChecker,
-            new ExpirationTimeChecker,
+            new NotBeforeChecker(clock: $clock),
+            new ExpirationTimeChecker(clock: $clock),
             new AudienceChecker(config('cloudflare-zero-trust-middleware.cloudflare_zero_trust_application_audience_tag')),
         ];
     }
