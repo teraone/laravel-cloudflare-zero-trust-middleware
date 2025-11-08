@@ -2,6 +2,4 @@
 
 namespace Teraone\ZeroTrustMiddleware\Exceptions;
 
-class InvalidConfigurationException extends \Exception
-{
-}
+class InvalidConfigurationException extends \Exception {}

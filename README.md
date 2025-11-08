@@ -23,7 +23,7 @@ composer require teraone/laravel-cloudflare-zero-trust-middleware
 Publish the config file with:
 
 ```bash
-php artisan vendor:publish --tag="laravel-cloudflare-zero-trust-middleware-config"
+php artisan vendor:publish --tag="cloudflare-zero-trust-middleware-config"
 ```
 
 This is the content of the published config file:
@@ -127,7 +127,8 @@ Please review [our security policy](../../security/policy) on how to report secu
 
 ## Credits
 
-- [Stefan Gotre](https://github.com/teraone)
+- [Stefan R.](https://github.com/teraone)
+- [Tyler Trushin](https://github.com/ttrushin)
 - [All Contributors](../../contributors)
 
 ## License
