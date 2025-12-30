@@ -21,6 +21,7 @@ use Jose\Component\Checker\NotBeforeChecker;
 use Jose\Component\Core\AlgorithmManager;
 use Jose\Component\Core\JWKSet;
 use Jose\Component\Signature\Algorithm\RS256;
+use Jose\Component\Signature\JWS;
 use Jose\Component\Signature\JWSTokenSupport;
 use Jose\Component\Signature\JWSVerifier;
 use Jose\Component\Signature\Serializer\CompactSerializer;
@@ -40,7 +41,9 @@ class ZeroTrustMiddleware
 
     public const CERTIFICATE_CACHE_KEY = 'cloudflare-zero-trust-middleware-certificate-cache';
 
-    final public const CLAIMS = ['iss', 'sub', 'aud', 'exp', 'nbf', 'country', 'identity_nonce', 'type'];
+    final public const USER_CLAIMS = ['iss', 'sub', 'aud', 'exp', 'nbf', 'country', 'identity_nonce', 'type'];
+
+    final public const SERVICE_TOKEN_CLAIMS = ['iss', 'aud', 'exp', 'type', 'common_name'];
 
     /**
      * Handle an incoming request.
@@ -80,25 +83,40 @@ class ZeroTrustMiddleware
         return $next($request);
     }
 
-    protected function getClaims(): array
+    protected function getClaims(JWS $jws): array
     {
-        return self::CLAIMS;
+        $payload = json_decode($jws->getPayload(), true);
+
+        // User JWTs have an email claim, service tokens have common_name
+        if (isset($payload['email'])) {
+            return self::USER_CLAIMS;
+        }
+
+        // Default to service token claims (includes common_name and minimal set)
+        return self::SERVICE_TOKEN_CLAIMS;
     }
 
     /**
      * @throws \DateInvalidTimeZoneException
      */
-    protected function getClaimCheckers(): array
+    protected function getClaimCheckers(JWS $jws): array
     {
+        $payload = json_decode($jws->getPayload(), true);
         $clock = new NativeClock(new DateTimeZone('UTC'));
 
-        return [
+        $checkers = [
             new IssuedAtChecker(clock: $clock),
             new IssuerChecker(['https://'.config('cloudflare-zero-trust-middleware.cloudflare_team_name').'.cloudflareaccess.com']),
-            new NotBeforeChecker(clock: $clock),
             new ExpirationTimeChecker(clock: $clock),
             new AudienceChecker(config('cloudflare-zero-trust-middleware.cloudflare_zero_trust_application_audience_tag')),
         ];
+
+        // Only check NotBeforeChecker for user JWTs (they have the nbf claim)
+        if (isset($payload['email'])) {
+            $checkers[] = new NotBeforeChecker(clock: $clock);
+        }
+
+        return $checkers;
     }
 
     /**
@@ -130,10 +148,10 @@ class ZeroTrustMiddleware
 
         $headerCheckerManager->check($jws, 0, ['kid', 'alg']);
 
-        $claimCheckerManager = new ClaimCheckerManager($this->getClaimCheckers());
+        $claimCheckerManager = new ClaimCheckerManager($this->getClaimCheckers($jws));
 
         $claims = json_decode($jws->getPayload(), true);
-        $claimCheckerManager->check($claims, $this->getClaims());
+        $claimCheckerManager->check($claims, $this->getClaims($jws));
 
         // We must verify the signature with the correct key
         $key_id_used_for_sig = $jws->getSignature(0)->getProtectedHeaderParameter('kid');
