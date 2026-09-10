@@ -108,6 +108,79 @@ class TestCase extends Orchestra
         return $serializer->serialize($jws, 0);
     }
 
+    protected function generateUserJWT(string $aud, \Carbon\Carbon $expires, JWK $key, ?array $overrides = null): string
+    {
+        $payload = [
+            'aud' => [$aud],
+            'email' => 'user@example.com',
+            'exp' => $expires->timestamp,
+            'iat' => now()->subSecond()->timestamp,
+            'nbf' => now()->subSecond()->timestamp,
+            'iss' => 'https://'.config('cloudflare-zero-trust-middleware.cloudflare_team_name').'.cloudflareaccess.com',
+            'type' => 'user',
+            'identity_nonce' => 'nonce123',
+            'sub' => 'user-sub-123',
+            'country' => 'US',
+        ];
+
+        if ($overrides !== null) {
+            foreach ($overrides as $overrideKey => $overrideValue) {
+                if ($overrideValue === null) {
+                    unset($payload[$overrideKey]);
+                } else {
+                    $payload[$overrideKey] = $overrideValue;
+                }
+            }
+        }
+
+        $algorithmManager = new AlgorithmManager([new RS256]);
+        $jwsBuilder = new JWSBuilder($algorithmManager);
+
+        $jws = $jwsBuilder->create()
+            ->withPayload(json_encode($payload))
+            ->addSignature($key, ['alg' => 'RS256', 'kid' => $key->get('kid')])
+            ->build();
+
+        $serializer = new CompactSerializer;
+
+        return $serializer->serialize($jws, 0);
+    }
+
+    protected function generateServiceTokenJWT(string $aud, \Carbon\Carbon $expires, JWK $key, ?array $overrides = null): string
+    {
+        $payload = [
+            'aud' => [$aud],
+            'exp' => $expires->timestamp,
+            'iat' => now()->subSecond()->timestamp,
+            'iss' => 'https://'.config('cloudflare-zero-trust-middleware.cloudflare_team_name').'.cloudflareaccess.com',
+            'type' => 'app',
+            'sub' => '',
+            'common_name' => 'test-service-token.access',
+        ];
+
+        if ($overrides !== null) {
+            foreach ($overrides as $overrideKey => $overrideValue) {
+                if ($overrideValue === null) {
+                    unset($payload[$overrideKey]);
+                } else {
+                    $payload[$overrideKey] = $overrideValue;
+                }
+            }
+        }
+
+        $algorithmManager = new AlgorithmManager([new RS256]);
+        $jwsBuilder = new JWSBuilder($algorithmManager);
+
+        $jws = $jwsBuilder->create()
+            ->withPayload(json_encode($payload))
+            ->addSignature($key, ['alg' => 'RS256', 'kid' => $key->get('kid')])
+            ->build();
+
+        $serializer = new CompactSerializer;
+
+        return $serializer->serialize($jws, 0);
+    }
+
     protected function generateJwtFromUnknownKey(string $aud, \Carbon\Carbon $expires)
     {
         $key = JWKFactory::createRSAKey(
