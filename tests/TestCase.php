@@ -2,6 +2,7 @@
 
 namespace Teraone\ZeroTrustMiddleware\Tests;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Http;
 use Jose\Component\Core\AlgorithmManager;
@@ -75,7 +76,7 @@ class TestCase extends Orchestra
         ]);
     }
 
-    protected function generateJWT(string $aud, \Carbon\Carbon $expires, JWK $key): string
+    protected function generateJWT(string $aud, Carbon $expires, JWK $key): string
     {
         $payload = json_encode([
             'aud' => [$aud],
@@ -108,7 +109,7 @@ class TestCase extends Orchestra
         return $serializer->serialize($jws, 0);
     }
 
-    protected function generateUserJWT(string $aud, \Carbon\Carbon $expires, JWK $key, ?array $overrides = null): string
+    protected function generateUserJWT(string $aud, Carbon $expires, JWK $key, ?array $overrides = null): string
     {
         $payload = [
             'aud' => [$aud],
@@ -146,7 +147,7 @@ class TestCase extends Orchestra
         return $serializer->serialize($jws, 0);
     }
 
-    protected function generateServiceTokenJWT(string $aud, \Carbon\Carbon $expires, JWK $key, ?array $overrides = null): string
+    protected function generateServiceTokenJWT(string $aud, Carbon $expires, JWK $key, ?array $overrides = null): string
     {
         $payload = [
             'aud' => [$aud],
@@ -181,7 +182,7 @@ class TestCase extends Orchestra
         return $serializer->serialize($jws, 0);
     }
 
-    protected function generateJwtFromUnknownKey(string $aud, \Carbon\Carbon $expires)
+    protected function generateJwtFromUnknownKey(string $aud, Carbon $expires)
     {
         $key = JWKFactory::createRSAKey(
             2048, // Size in bits of the key. We recommend at least 2048 bits.
